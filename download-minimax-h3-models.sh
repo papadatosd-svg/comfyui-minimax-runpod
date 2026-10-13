@@ -11,10 +11,9 @@ export HF_XET_HIGH_PERFORMANCE=1
 MODELS=(
     "diffusion_models|minimax_h3_fl2va_pruned_int8_convrot.safetensors|https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors|20000000000"
     "text_encoders|qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors|https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors|15000000000"
-    "vae|minimax_h3_video_vae_int8_convrot.safetensors|https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors|2700000000"
+    "vae|minimax_h3_video_vae_fp16.safetensors|https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_fp16.safetensors|5000000000"
     "vae|minimax_h3_audio_vae_fp32.safetensors|https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors|600000000"
 )
-
 
 log() { echo "$(date): $*" | tee -a "$LOG"; }
 
@@ -54,7 +53,7 @@ if [ -n "${MODEL_VOLUME_PATH:-}" ] && [ -d "$MODEL_VOLUME_PATH" ]; then
     for d in "$MODEL_VOLUME_PATH"/*/; do
         [ -d "$d" ] || continue
         dest="$BASE_DIR/$(basename "$d")"
-        rmdir "$dest" 2>/dev/null  # succeeds only if empty
+        rmdir "$dest" 2>/dev/null
         if [ -e "$dest" ] && [ ! -L "$dest" ]; then
             log "   ⚠️ $dest non-empty dir, not linking"
             continue
@@ -79,8 +78,6 @@ YAML
     exit 0
 fi
 
-# Polls the temp dir size while hf/hf_transfer downloads (hf_transfer emits no
-# parseable progress when detached), logging a bar + % + MB every 20s.
 monitor_progress() {
     local watch_dir="$1" expected="$2" name="$3"
     local cur pct filled pad bar exp_mb
