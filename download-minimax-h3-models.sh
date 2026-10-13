@@ -186,3 +186,27 @@ else
     log "❌ $failures model downloads failed"
     exit 1
 fi
+# === RealESRGAN x4plus automatic download ===
+UPSCALE_DIR="$BASE_DIR/upscale_models"
+UPSCALE_FILE="$UPSCALE_DIR/RealESRGAN_x4plus.pth"
+UPSCALE_URL="https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+
+mkdir -p "$UPSCALE_DIR"
+
+if [ -f "$UPSCALE_FILE" ] && [ "$(stat -c%s "$UPSCALE_FILE")" -ge 60000000 ]; then
+    log "✅ RealESRGAN_x4plus.pth already installed"
+else
+    log "📥 Downloading RealESRGAN_x4plus.pth..."
+    rm -f "$UPSCALE_FILE.tmp"
+
+    if curl -fL --retry 3 --connect-timeout 30 \
+        "$UPSCALE_URL" -o "$UPSCALE_FILE.tmp" \
+        && [ "$(stat -c%s "$UPSCALE_FILE.tmp")" -ge 60000000 ]; then
+        mv -f "$UPSCALE_FILE.tmp" "$UPSCALE_FILE"
+        log "✅ RealESRGAN_x4plus.pth installed successfully"
+    else
+        rm -f "$UPSCALE_FILE.tmp"
+        log "❌ RealESRGAN download failed"
+        exit 1
+    fi
+fi
